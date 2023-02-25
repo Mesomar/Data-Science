@@ -1,1 +1,76 @@
-test
+#Vet data
+install.packages("readxl")
+
+library(readxl)
+
+
+#selecting and importing the data
+my.dir <- "E:\\R_Studio\\IST_719\\Week_3\\HW3\\"
+
+#paste0 just concatanates the whole thing in ()
+vet <- read_xlsx(paste0(my.dir, "veteran_suicides_full_dataset.xlsx")
+                , sheet = 1
+                , col_names = TRUE
+                )
+#info of data
+str(vet)
+
+#random plots possible use later
+#plot(vet$vet_males_p)
+#plot(vet$vet_females_p, names.arg = vet$state
+#        , border = NA)
+#boxplot(vet$vet_15_24)
+
+#boxplots of reported M and F (vets) 
+boxplot(vet$vet_females)
+boxplot(vet$vet_males
+        , col = "lightgreen")
+
+#histograms 
+hist(vet$vet_suicides
+     , xlab = "Veteran Deaths"
+     , main = "Distribution of Veteran Suicides"
+     )
+
+hist(vet$all_suicides
+     , col = "lightblue"
+     , xlab = "USA Deaths"
+     , main = "Distribution of USA Suicides")
+
+
+# Percentage of Suicides that are Veterans
+hist(vet$vet_suicides_p
+     , col = "darkgreen"
+     , xlab = "Percentage"
+     , main = "Distribution of Percentage of Suicides that are Veterans")
+
+# Veteran Suicide Rate
+hist(vet$vet_rate
+     , col = "lightgreen"
+     , xlab = "Percentage  per 100,000 Vetern Pop."
+     , main = "Distribution of Veteran Suicide Rate")
+
+# Civilian Suicide Rate
+hist(vet$civ_rate
+     , col = "lightblue"
+     , xlab = "Percentage per 100,000 Civilian Pop."
+     , main = "Distribution of Civilian Suicide Rate")
+
+#vet suicides by year
+vet1 <- tapply(vet$vet_suicides, list(vet$Year), sum)
+barplot(vet1, beside = T
+        , col = c("darkred")
+        , legend.text = F
+)
+
+#comparing vets vs total 
+plot(vet$all_suicides, vet$vet_suicides
+     , pch = 16
+     , col = c("darkred")
+     , xlab = "Reported Suicides"
+     , ylab = "Veteran Suicides"
+     , main = "Veteran Suicides compared to Total reported"
+)
+
+par(mfrow = c(2,2))
+par(mfrow = c(2,2))
