@@ -1,3 +1,4 @@
+/SQL DDL
 /* Author : Sonny Lizarraga Course : IST659 M400 Term : January, 2019 */
 --Dropping Tables 1st if they exist. Avoiding any duplication or table errors. 
 IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Reenlistment') 
@@ -33,16 +34,156 @@ END
 GO
 
 -- Creating the Option table 
-CREATE TABLE [Option] ( Option_ID int identity, OptionNumber varchar(1) not null, OptionDescription varchar(50) not null, CONSTRAINT PK_Option_ID PRIMARY KEY (Option_ID), )
+CREATE TABLE [Option] ( 
+        Option_ID int identity,
+        OptionNumber varchar(1) not null,
+        OptionDescription varchar(50) not null, 
+        CONSTRAINT PK_Option_ID PRIMARY KEY (Option_ID), 
+        )
+        
 -- Creating the FlagCode table 
-CREATE TABLE FlagCode ( FlagCode_ID int identity, FlagCode varchar(2) not null, FlagCodeDescription varchar(50) not null, CONSTRAINT PK_FlagCode_ID PRIMARY KEY (FlagCode_ID) )
+CREATE TABLE FlagCode ( 
+        FlagCode_ID int identity,
+        FlagCode varchar(2) not null,
+        FlagCodeDescription varchar(50) not null, 
+        CONSTRAINT PK_FlagCode_ID PRIMARY KEY (FlagCode_ID) 
+        )
+        
 -- Creating the Company table 
-CREATE TABLE Company ( Uic varchar(6) not null, Company_ID int identity, CompanyName varchar(50) not null, CommanderFirstName varchar(50) not null, CommanderLastName varchar(50) not null, CommanderMiddleName varchar (50),
-CONSTRAINT PK_Company_ID PRIMARY KEY (Company_ID) )
+CREATE TABLE Company ( 
+        Uic varchar(6) not null, 
+        Company_ID int identity, 
+        CompanyName varchar(50) not null, 
+        CommanderFirstName varchar(50) not null, 
+        CommanderLastName varchar(50) not null, 
+        CommanderMiddleName varchar (50),
+        CONSTRAINT PK_Company_ID PRIMARY KEY (Company_ID) 
+        )
+        
 -- Creating the Soldier table 
-CREATE TABLE Soldier ( Soldier_ID int identity, SoldierFirstName varchar(50) not null, SoldierLastName varchar(50) not null, SoldierMiddleName varchar (50), Ssn varchar (9) not null, Ets datetime not null, HomeOfRecordStreet varchar(50), HomeOfRecordCity varchar (50), HomeOfRecordState varchar (50), HomeOfRecordZip varchar(50), Mos varchar(30) not null, Company_ID int not null, FlagCode_ID int not null,
-CONSTRAINT PK_Soldier_ID PRIMARY KEY (Soldier_ID), CONSTRAINT U1_Ssn UNIQUE(Ssn), CONSTRAINT FK1_Soldier FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID), CONSTRAINT FK2_Soldier FOREIGN KEY (FlagCode_ID) REFERENCES FlagCode(FlagCode_ID) )
-CREATE TABLE SoldierOption ( SoldierOption_ID int identity, Term varchar (1) not null, Option_ID int not null, Soldier_ID int not null,CONSTRAINT PK_SoldierOption_ID PRIMARY KEY (SoldierOption_ID), CONSTRAINT FK1_Option_ID FOREIGN KEY (Option_ID) REFERENCES [Option](Option_ID), CONSTRAINT FK2_Soldier_ID FOREIGN KEY (Soldier_ID) REFERENCES Soldier(Soldier_ID) )
+CREATE TABLE Soldier ( 
+        Soldier_ID int identity, 
+        SoldierFirstName varchar(50) not null, 
+        SoldierLastName varchar(50) not null, 
+        SoldierMiddleName varchar (50), 
+        Ssn varchar (9) not null, 
+        Ets datetime not null, 
+        HomeOfRecordStreet varchar(50), 
+        HomeOfRecordCity varchar (50), 
+        HomeOfRecordState varchar (50), 
+        HomeOfRecordZip varchar(50), 
+        Mos varchar(30) not null, 
+        Company_ID int not null, 
+        FlagCode_ID int not null,
+
+        CONSTRAINT PK_Soldier_ID PRIMARY KEY (Soldier_ID), 
+        CONSTRAINT U1_Ssn UNIQUE(Ssn), 
+        CONSTRAINT FK1_Soldier FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID), 
+        CONSTRAINT FK2_Soldier FOREIGN KEY (FlagCode_ID) REFERENCES FlagCode(FlagCode_ID) 
+        )
+        
+CREATE TABLE SoldierOption ( 
+        SoldierOption_ID int identity, 
+        Term varchar (1) not null, 
+        Option_ID int not null, 
+        Soldier_ID int not null,
+        CONSTRAINT PK_SoldierOption_ID PRIMARY KEY (SoldierOption_ID), 
+        CONSTRAINT FK1_Option_ID FOREIGN KEY (Option_ID) REFERENCES [Option](Option_ID), 
+        CONSTRAINT FK2_Soldier_ID FOREIGN KEY (Soldier_ID) REFERENCES Soldier(Soldier_ID) 
+        )
+        
 -- Creating the Reenlistment table 
-CREATE TABLE Reenlistment ( Reenlistment_ID int identity, ReenlistmentOfficerFirstName varchar(50) not null, ReenlistmentOfficerLastName varchar(50) not null, ReenlistmentOfficerMiddleName varchar (50), ReenlistmentDate datetime not null, NewEts datetime not null, NumberOfMonths varchar(3) not null, Rcn varchar(50) not null, Soldier_ID int not null, Option_ID int not null,
-CONSTRAINT PK_Reenlistment_ID PRIMARY KEY (Reenlistment_ID), CONSTRAINT U1_Rcn UNIQUE(Rcn), CONSTRAINT FK1_Reenlistment FOREIGN KEY (Soldier_ID) REFERENCES Soldier(Soldier_ID), CONSTRAINT FK2_Reenlistment FOREIGN KEY (Option_ID) REFERENCES [Option](Option_ID)
+CREATE TABLE Reenlistment ( 
+         Reenlistment_ID int identity, 
+         ReenlistmentOfficerFirstName varchar(50) not null, 
+         ReenlistmentOfficerLastName varchar(50) not null, 
+         ReenlistmentOfficerMiddleName varchar (50), 
+         ReenlistmentDate datetime not null, 
+         NewEts datetime not null, 
+         NumberOfMonths varchar(3) not null, 
+         Rcn varchar(50) not null, 
+         Soldier_ID int not null, 
+         Option_ID int not null,
+         CONSTRAINT PK_Reenlistment_ID PRIMARY KEY (Reenlistment_ID), 
+         CONSTRAINT U1_Rcn UNIQUE(Rcn), 
+         CONSTRAINT FK1_Reenlistment FOREIGN KEY (Soldier_ID) REFERENCES Soldier(Soldier_ID), 
+         CONSTRAINT FK2_Reenlistment FOREIGN KEY (Option_ID) REFERENCES [Option](Option_ID)
+         
+/ SQL DML
+/ INSERT Statements
+/ Below is a sampling of the many insert statements that were created for each table.
+/ Option Table 
+--Insert into option table 
+INSERT INTO [Option](OptionNumber,OptionDescription) VALUES('1','Regular Reenlistment') 
+INSERT INTO [Option](OptionNumber,OptionDescription) VALUES('2','Current Station Stabilization') 
+INSERT INTO [Option](OptionNumber,OptionDescription) VALUES('3','Training') 
+INSERT INTO [Option](OptionNumber,OptionDescription) VALUES('4','OCONUS Station of Choice') 
+INSERT INTO [Option](OptionNumber,OptionDescription) VALUES('5','CONUS Station of Choice')
+
+/ Company Table
+--Insert into Company table 
+INSERT INTO Company(Uic,CompanyName,CommanderFirstName,CommanderLastName) 
+VALUES('W00101','A CO','Lisa','Myers') 
+INSERT INTO Company(Uic,CompanyName,CommanderFirstName,CommanderLastName) 
+VALUES('W00102','B CO','Alyson','Morales') 
+INSERT INTO Company(Uic,CompanyName,CommanderFirstName,CommanderLastName) 
+VALUES('W00103','C CO','Jarrod','Harrison')
+INSERT INTO Company(Uic,CompanyName,CommanderFirstName,CommanderLastName) 
+VALUES('W00104','D CO','Jimmy','Riley') 
+INSERT INTO Company(Uic,CompanyName,CommanderFirstName,CommanderLastName) 
+VALUES('W00105','MI CO','Davon','Schneider') 
+INSERT INTO Company(Uic,CompanyName,CommanderFirstName,CommanderLastName) 
+VALUES('W00108','HHC','Jeffery','Hodges')
+
+/FlagCode Table
+--Insert into FlagCode table 
+INSERT INTO FlagCode(FlagCode,FlagCodeDescription) 
+VALUES('9M','Approved retirement under QMP ') 
+INSERT INTO FlagCode(FlagCode,FlagCodeDescription) 
+VALUES('9U','Approved retirement under QSP ') 
+INSERT INTO FlagCode(FlagCode,FlagCodeDescription) 
+VALUES('9Y','Retirement') 
+INSERT INTO FlagCode(FlagCode,FlagCodeDescription) 
+VALUES('12','Approved retirement under TERA ') 
+INSERT INTO FlagCode(FlagCode,FlagCodeDescription) 
+VALUES('9L','Involuntary separation under QMP ') 
+INSERT INTO FlagCode(FlagCode,FlagCodeDescription) 
+VALUES('9J','Involuntary separation under QSP ')
+
+/Soldier Table
+--Insert into Soldier table 
+INSERT INTO Soldier(SoldierFirstName,SoldierLastName,Ssn,Ets,HomeOfRecordStreet,HomeOfRecordCity,HomeOfRecordState,HomeOfRecordZip,Mos,Company_ID,FlagCode_ID) 
+VALUES('Alisha','Cannon','999001025','1/1/2021','247 9th Lane','Mount Vernon','DE','95849','88M1','2','32') 
+INSERT INTO Soldier(SoldierFirstName,SoldierLastName,Ssn,Ets,HomeOfRecordStreet,HomeOfRecordCity,HomeOfRecordState,HomeOfRecordZip,Mos,Company_ID,FlagCode_ID) 
+VALUES('Sarah','Blake','999001619','1/1/2021','345 Polk Terrace','Fremont','ME','99310','11B1','3','32') 
+INSERT INTO Soldier(SoldierFirstName,SoldierLastName,Ssn,Ets,HomeOfRecordStreet,HomeOfRecordCity,HomeOfRecordState,HomeOfRecordZip,Mos,Company_ID,FlagCode_ID) 
+VALUES('Sophie','Dean','999002586','1/1/2021','174 Washington Turnpike','St. Paul','CA','57005','91B1','5','21') 
+INSERT INTO Soldier(SoldierFirstName,SoldierLastName,Ssn,Ets,HomeOfRecordStreet,HomeOfRecordCity,HomeOfRecordState,HomeOfRecordZip,Mos,Company_ID,FlagCode_ID) 
+VALUES('Christian','Ellis','999001653','1/10/2020','417 Pierce Way','Kansas City ','MI','51209','92A1','3','32') 
+INSERT INTO Soldier(SoldierFirstName,SoldierLastName,Ssn,Ets,HomeOfRecordStreet,HomeOfRecordCity,HomeOfRecordState,HomeOfRecordZip,Mos,Company_ID,FlagCode_ID) 
+VALUES('Jessica','Patterson','999001665','1/10/2020','447 Hickory Expressway','Oxnard','MN','59350','12K1','3','32') 
+INSERT INTO Soldier(SoldierFirstName,SoldierLastName,Ssn,Ets,HomeOfRecordStreet,HomeOfRecordCity,HomeOfRecordState,HomeOfRecordZip,Mos,Company_ID,FlagCode_ID) 
+VALUES('Nicolas','Fuller','999001975','1/10/2020','745 Nixon Way','Naperville','RI','2801','68W1','4','17')
+
+/ReenlistmentTable
+--Insert into Reenlistment table 
+INSERT INTO Reenlistment(ReenlistmentOfficerFirstName,ReenlistmentOfficerLastName,ReenlistmentDate,NewEts,NumberOfMonths,Rcn,Soldier_ID,Option_ID) 
+VALUES('Jon','King','3/22/2019','01/01/2024','36','325654','1','5') 
+INSERT INTO Reenlistment(ReenlistmentOfficerFirstName,ReenlistmentOfficerLastName,ReenlistmentDate,NewEts,NumberOfMonths,Rcn,Soldier_ID,Option_ID) 
+VALUES('Abbey','Steele','3/21/2019','01/01/2024','36','325655','2','5') 
+INSERT INTO Reenlistment(ReenlistmentOfficerFirstName,ReenlistmentOfficerLastName,ReenlistmentDate,NewEts,NumberOfMonths,Rcn,Soldier_ID,Option_ID) 
+VALUES('Khalil','Henderson','3/15/2019','01/10/2024','48','325656','4','3') 
+INSERT INTO Reenlistment(ReenlistmentOfficerFirstName,ReenlistmentOfficerLastName,ReenlistmentDate,NewEts,NumberOfMonths,Rcn,Soldier_ID,Option_ID) 
+VALUES('Abraham','Warner','3/20/2019','01/10/2023','36','325657','5','5') 
+INSERT INTO Reenlistment(ReenlistmentOfficerFirstName,ReenlistmentOfficerLastName,ReenlistmentDate,NewEts,NumberOfMonths,Rcn,Soldier_ID,Option_ID) 
+VALUES('Tanisha','Padilla','3/18/2019','01/10/2023','36','325658','7','5') 
+INSERT INTO Reenlistment(ReenlistmentOfficerFirstName,ReenlistmentOfficerLastName,ReenlistmentDate,NewEts,NumberOfMonths,Rcn,Soldier_ID,Option_ID) 
+VALUES('Abigail','Wang','3/18/2019','01/10/2025','60','325659','8','2')
+
+/ SoldierOption Table
+--Insert into SoldierOption table 
+INSERT INTO SoldierOption(Term,Option_ID,Soldier_ID) VALUES('1','5','1') 
+INSERT INTO SoldierOption(Term,Option_ID,Soldier_ID) VALUES('1','5','2') 
+INSERT INTO SoldierOption(Term,Option_ID,Soldier_ID) VALUES('1','3','4') 
+INSERT INTO SoldierOption(Term,Option_ID,Soldier_ID) VALUES('1','5','5') 
+INSERT INTO SoldierOption(Term,Option_ID,Soldier_ID) VALUES('1','5','7')
