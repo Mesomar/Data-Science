@@ -1,4 +1,3 @@
-#Homework week 3
 #Vet data
 install.packages("readxl")
 
