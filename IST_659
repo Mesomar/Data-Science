@@ -1,0 +1,48 @@
+/* Author : Sonny Lizarraga Course : IST659 M400 Term : January, 2019 */
+--Dropping Tables 1st if they exist. Avoiding any duplication or table errors. 
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Reenlistment') 
+BEGIN 
+DROP TABLE Reenlistment 
+END 
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'SoldierOption') 
+BEGIN 
+DROP TABLE SoldierOption 
+END 
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Soldier') 
+BEGIN DROP TABLE Soldier 
+END 
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Company') 
+BEGIN DROP TABLE Company 
+END 
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'FlagCode') 
+BEGIN DROP TABLE FlagCode 
+END 
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Option') 
+BEGIN DROP TABLE [Option] 
+END 
+GO
+
+-- Creating the Option table 
+CREATE TABLE [Option] ( Option_ID int identity, OptionNumber varchar(1) not null, OptionDescription varchar(50) not null, CONSTRAINT PK_Option_ID PRIMARY KEY (Option_ID), )
+-- Creating the FlagCode table 
+CREATE TABLE FlagCode ( FlagCode_ID int identity, FlagCode varchar(2) not null, FlagCodeDescription varchar(50) not null, CONSTRAINT PK_FlagCode_ID PRIMARY KEY (FlagCode_ID) )
+-- Creating the Company table 
+CREATE TABLE Company ( Uic varchar(6) not null, Company_ID int identity, CompanyName varchar(50) not null, CommanderFirstName varchar(50) not null, CommanderLastName varchar(50) not null, CommanderMiddleName varchar (50),
+CONSTRAINT PK_Company_ID PRIMARY KEY (Company_ID) )
+-- Creating the Soldier table 
+CREATE TABLE Soldier ( Soldier_ID int identity, SoldierFirstName varchar(50) not null, SoldierLastName varchar(50) not null, SoldierMiddleName varchar (50), Ssn varchar (9) not null, Ets datetime not null, HomeOfRecordStreet varchar(50), HomeOfRecordCity varchar (50), HomeOfRecordState varchar (50), HomeOfRecordZip varchar(50), Mos varchar(30) not null, Company_ID int not null, FlagCode_ID int not null,
+CONSTRAINT PK_Soldier_ID PRIMARY KEY (Soldier_ID), CONSTRAINT U1_Ssn UNIQUE(Ssn), CONSTRAINT FK1_Soldier FOREIGN KEY (Company_ID) REFERENCES Company(Company_ID), CONSTRAINT FK2_Soldier FOREIGN KEY (FlagCode_ID) REFERENCES FlagCode(FlagCode_ID) )
+CREATE TABLE SoldierOption ( SoldierOption_ID int identity, Term varchar (1) not null, Option_ID int not null, Soldier_ID int not null,CONSTRAINT PK_SoldierOption_ID PRIMARY KEY (SoldierOption_ID), CONSTRAINT FK1_Option_ID FOREIGN KEY (Option_ID) REFERENCES [Option](Option_ID), CONSTRAINT FK2_Soldier_ID FOREIGN KEY (Soldier_ID) REFERENCES Soldier(Soldier_ID) )
+-- Creating the Reenlistment table 
+CREATE TABLE Reenlistment ( Reenlistment_ID int identity, ReenlistmentOfficerFirstName varchar(50) not null, ReenlistmentOfficerLastName varchar(50) not null, ReenlistmentOfficerMiddleName varchar (50), ReenlistmentDate datetime not null, NewEts datetime not null, NumberOfMonths varchar(3) not null, Rcn varchar(50) not null, Soldier_ID int not null, Option_ID int not null,
+CONSTRAINT PK_Reenlistment_ID PRIMARY KEY (Reenlistment_ID), CONSTRAINT U1_Rcn UNIQUE(Rcn), CONSTRAINT FK1_Reenlistment FOREIGN KEY (Soldier_ID) REFERENCES Soldier(Soldier_ID), CONSTRAINT FK2_Reenlistment FOREIGN KEY (Option_ID) REFERENCES [Option](Option_ID)
