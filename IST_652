@@ -1,0 +1,374 @@
+Code
+'''
+Code cleaning up and anaylizing the reenlistmnet ans extension credits. 
+Merging the two df via two simliar columns.
+'''
+import pandas as pd
+import datetime
+import numpy as np
+import matplotlib.pyplot as plt
+import csv
+
+#importing the two files
+df = pd.read_csv (r'C:\Users\mesom\pyprograms\Reenlistment.csv')
+dfe = pd.read_csv (r'C:\Users\mesom\pyprograms\Extensions.csv')
+
+#basic exploration of the reenlistment data
+print('Shape of the reenlisment DF:\n',df.shape)
+print('Col names of reenlistment DF:\n',df.columns.values.tolist())
+print(df.describe())
+print(df.dtypes)
+df.head(10)
+df.tail(10)
+print('Uniqness of each column:\n',df.nunique())
+display(df)
+
+#basic exploration of the extension data
+print('Shape of the extension DF:\n',dfe.shape)
+print('Column names of extension DF:\n',dfe.columns.values.tolist())
+print(dfe.describe())
+print(dfe.dtypes)
+dfe.head(10)
+dfe.tail(10)
+print('Uniqness of each column:\n',dfe.nunique())
+display(dfe)
+
+
+#Viewing which reenlistments have blanks and a count
+df.isnull().sum(axis = 0)
+
+#Viewing which extensions have blanks and a count
+dfe.isnull().sum(axis = 0)
+
+#replacing the NaN with needed values
+
+# reups
+df['auth_msg_nbr'] = df['auth_msg_nbr'].fillna('none')
+df['prom_pts'] = df['prom_pts'].fillna(0)
+df['srb_amt'] = df['srb_amt'].fillna(0)
+df['stab_months'] = df['stab_months'].fillna(0)
+
+# extn
+dfe['prmos'] = dfe['prmos'].fillna('0000')
+dfe['prom_pts'] = dfe['prom_pts'].fillna(0)
+
+#Removing the skill lvl to pmos field
+
+# reups
+df['pmos'] = df['pmos'].str[:3]
+
+# extn
+dfe['pmos'] = dfe['pmos'].str[:3]
+
+df=pd.DataFrame(df)
+dfe=pd.DataFrame(dfe)
+
+#viewing the DFs
+print(df)
+print(dfe)
+
+#Converts to date time string
+
+#Reups
+df['dob'] = pd.to_datetime(df['dob'])
+
+#extn
+dfe['dob'] = pd.to_datetime(dfe['dob'])
+
+#function to calculate age
+def from_dob_to_age(born):
+    today = datetime.date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+#adding age as a column to the dataframe
+
+#reups
+age = df['dob'].apply(lambda x: from_dob_to_age(x))
+df['age'] = age
+df
+
+# extns
+age = dfe['dob'].apply(lambda x: from_dob_to_age(x))
+dfe['age'] = age
+dfe
+
+#Dropping those reups with a Y since there term break normal conditions
+df = pd.DataFrame(df[df['indefinite_status'] == 'N'])
+
+#counts of grade
+
+# reups
+print('Reenlistments:\n',df['grade'].value_counts())
+
+# extns
+print('Extensions:\n',dfe['grade'].value_counts())
+
+#Creating the data frame for srb amts and grades
+grade_srb = df[['grade','srb_amt','sex','pmos','age','term_length','macom']]
+print(grade_srb)
+
+grade_srb = pd.DataFrame(df[['grade','srb_amt','term_length','macom']])
+
+#binning the srb amts by 7500
+labels = ['{0} - {1}'.format(i,i+7500) for i in range(0,81000,200)]
+grade_srb['range'] = pd.cut(grade_srb.srb_amt, range(0,81005,200), right=False, labels=labels)
+print(grade_srb)
+
+#printing the unique value of each column
+print(grade_srb.nunique())
+
+#Creating the data frame for extensions and grades
+grade_ext = dfe[['grade','sex','pmos','age','term_length','ext_reason']]
+print(grade_ext)
+
+#printing the unique value of each column
+print(grade_ext.nunique())
+
+
+#Exploration of grades reenlisting
+grade_cnt = pd.DataFrame(df['grade'].value_counts())
+#grade_cnt
+grade_cnt.plot.bar(rot=0);
+
+#Explorations of gender
+sex_cnt = pd.DataFrame(df['sex'].value_counts())
+sex_cnt.plot.bar(rot=0)
+
+#Explorations of age
+age_cnt2 = pd.DataFrame(df[['age','grade']])
+print(age_cnt2.describe())
+age_cnt2.groupby(['age']).count().plot(kind='bar')
+
+#Explorations by MACOM
+macom_cnt = pd.DataFrame(df['macom'].value_counts())
+fig = macom_cnt.plot.bar(rot=0, title='Reenlistments by Commands').get_figure()
+fig.savefig('test.jpeg')
+print(macom_cnt)
+
+#Exploration of grades extending
+grade_cnt = pd.DataFrame(dfe['grade'].value_counts())
+#grade_cnt
+grade_cnt.plot.bar(rot=0, color='g',title='Extensions by Grade')
+
+#Explorations of gender
+sex_cnt_ext = pd.DataFrame(dfe['sex'].value_counts())
+sex_cnt_ext.plot.bar(rot=0,color='g', title='Extensions by Sex')
+
+#Explorations of age
+age_cnt2_ext = pd.DataFrame(dfe[['age','grade']])
+print(age_cnt2_ext.describe())
+age_cnt2_ext.groupby(['age']).count().plot(kind='bar', color='g',title='Extensions by Age')
+
+#Explortaion of types of extensions
+ext_rea = pd.DataFrame(dfe['ext_reason'].value_counts())
+ext_rea.plot.bar(rot=0,color='g',title='Extension Reason Codes')
+
+#Exploration of the extension
+ext1 = dfe[['term_length','ext_reason','grade']]
+
+#Counts of table
+print('Extensions:\n',ext1['ext_reason'].value_counts())
+
+
+#Removing the W extensions
+ext2 = ext1.loc[(grade_ext['ext_reason'] != 'W')]
+
+#Counts of table
+print('Extensions without W:\n',ext2['grade'].value_counts())
+
+#Keeping only the W extensions
+ext3 = ext1.loc[(grade_ext['ext_reason'] == 'W')]
+
+#Counts of table
+print('Extensions W:\n',ext3['term_length'].value_counts())
+
+#graph of all extensions
+ext1.groupby(['term_length','ext_reason']).count().unstack().plot(kind='bar', title ='Extensions By Term Length', ylabel='Count',
+                                                                  xlabel='Term Length',y='grade',stacked=True)
+#graph of extensions without W
+ext2.groupby(['term_length','ext_reason']).count().unstack().plot(kind='bar', title ='Extensions By Term Length Without W', ylabel='Count',
+                                                                  xlabel='Term Length',y='grade',stacked=True)
+
+#graph of extensions of only W
+ext3.groupby(['term_length','ext_reason']).count().unstack().plot(kind='bar', title ='Extensions By Term Length W only', ylabel='Count',
+                                                                  xlabel='Term Length',y='grade',stacked=True, color='g')
+#means of term and grade
+print(ext1.mean())
+
+#plotting the count of MOSs that are greater than the total mean for reenlistments
+pmos_srb2 = df['pmos']
+pmos_counts = pmos_srb2.value_counts()
+pmean = pmos_counts.mean()
+top_pmos = pmos_counts > pmean
+pmos_counts = pmos_counts.loc[top_pmos]
+
+#Mean of total MOS reenlisting
+print('Mean of soldiers reenlisting per MOS:',pmean)
+pmos_counts.plot(kind='bar', title='Top MOSs Reenlisting', ylabel='Count', xlabel='MOS')
+
+#Viewing the top 10 MOSs with highest reenlistments
+print('Top 10 MOSs reenlisting:\n',pmos_counts.head(10))
+
+print('Total of reenlistments above the mean:',pmos_counts.sum())
+
+
+#writing the Top 10 out to CSV
+xpmos_counts = pmos_counts.head(10)
+xpmos_counts.to_csv('top_ten.csv')
+    
+
+#plotting the count of MOSs that are greater than the total mean 
+pmos_ext = dfe['pmos']
+pmos_counts_ext = pmos_ext.value_counts()
+pmean = pmos_counts_ext.mean()
+top_pmos_ext = pmos_counts_ext > pmean
+pmos_counts_ext = pmos_counts_ext.loc[top_pmos_ext]
+#pmos_counts_ext.plot(kind='bar')
+
+#Mean of total MOS extending
+print('Mean of soldiers extending per MOS:',pmean)
+pmos_counts_ext.plot(kind='bar', color='g',title='Top MOSs Extending', ylabel='Count', xlabel='MOS')
+
+#Viewing the top 10 MOSs with highest reenlistments
+print('Top 10 MOSs extending:\n',pmos_counts_ext.head(10))
+
+print('Total of extensions above the mean:',pmos_counts.sum())
+
+
+#writing the Top 10 out to CSV
+xpmos_counts = pmos_counts_ext.head(10)
+xpmos_counts.to_csv('Top_ten_ext.csv')
+  
+
+#removing anyone who is less than grade 7 for reenlistments
+grade_srb = grade_srb.loc[(grade_srb['grade'] < 7)] 
+grade_srb = grade_srb.loc[(grade_srb['grade'] > 3)] 
+
+print(grade_srb)
+
+#creating bins for srb amts in reenlistments
+labels = ['{0} - {1}'.format(i,i+7500) for i in range(0,80000,5000)]
+grade_srb['range'] = pd.cut(grade_srb.srb_amt, range(0,80005,5000), right=False, labels=labels)
+
+print(grade_srb.nunique())
+
+#Comparison of grade in reenlistments
+grade_cnt = pd.DataFrame(grade_srb['grade'].value_counts())
+#grade_cnt
+grade_cnt.plot.bar(rot=0);
+
+#range plot
+srb_buckets = pd.DataFrame(grade_srb['range'].value_counts())
+srb_buckets.plot.bar(rot=45)
+
+#bar chart of srb_amt across the grades
+grade_srb.groupby(['range','term_length']).count().unstack().plot(kind='bar', title ='All Reenlistments Pay Grades 4-6', ylabel='Count', xlabel='Bonus Amount Range',y='srb_amt', stacked=True)
+grade_srb.groupby(['range','term_length']).count().unstack().plot(kind='bar', title ='Pay Grades 4-6', ylabel='Count', xlabel='Bonus Amount Range',y='srb_amt', stacked=False)
+
+#bonus term length analysis
+t_srb = grade_srb.drop(['range'],axis=1)
+print(t_srb)
+y_srb = pd.DataFrame(t_srb[t_srb['srb_amt'] > 1])
+n_srb = pd.DataFrame(t_srb[t_srb['srb_amt'] < 1])
+n_srb.groupby(['term_length','grade']).count().unstack().plot(kind='bar', title='Pay Grades 4-6 No Incentive', y='srb_amt',xlabel= 'Term Length',ylabel= 'Count',stacked=True,rot=0)
+y_srb.groupby(['term_length','grade']).count().unstack().plot(kind='bar', title='Pay Grades 4-6 With Incentive', y='srb_amt',xlabel= 'Term Length',ylabel= 'Count',stacked=True, rot=0)
+
+print('Total of reenlistments with an Incentive:',len(y_srb['grade']))
+print('Total of reenlistments without an Incentive:',len(n_srb['grade']))
+
+#bonus term length analysis
+t_srb = grade_srb.drop(['range'],axis=1)
+print(t_srb)
+y_srb = pd.DataFrame(t_srb[t_srb['srb_amt'] > 1])
+n_srb = pd.DataFrame(t_srb[t_srb['srb_amt'] < 1])
+#plt.xticks(np.arange(min(x), max(x)+50, 1.0))
+n_srb.groupby(['term_length','grade']).count().unstack().plot(kind='bar', title='Pay Grades 4-6 No Incentive', y='srb_amt',xlabel= 'Term Length',ylabel= 'Count',stacked=True,rot=0)
+y_srb.groupby(['term_length','grade']).count().unstack().plot(kind='bar', title='Pay Grades 4-6 With Incentive', y='srb_amt',xlabel= 'Term Length',ylabel= 'Count',stacked=True, rot=0)
+
+print('Total of reenlistments with an Incentive:',len(y_srb['grade']))
+print('Total of reenlistments without an Incentive:',len(n_srb['grade']))
+
+
+t_srb['has_srb'] = np.where(t_srb['srb_amt'] >1, 1, 0)
+f_srb = t_srb.drop(['srb_amt'],axis=1)
+print(f_srb)
+
+f_srb.groupby(['term_length','has_srb']).count().unstack().plot(kind='bar', title='Incentive Vs No Incentive', y='grade',xlabel= 'Term Length',ylabel= 'Count',stacked=False, rot=0)
+plt.legend(['No Incentive','Incentive'])
+
+#removing anyone who is less than grade 7
+wgrade_srb = grade_srb.loc[(grade_srb['grade'] < 7)] 
+wgrade_srb = wgrade_srb.loc[(wgrade_srb['grade'] > 3)] 
+
+#removing anyone who gets no bonus
+wgrade_srb = wgrade_srb.loc[(wgrade_srb['srb_amt'] > 1)] 
+
+#Confirming that there are only 3 grades
+print(wgrade_srb.nunique())
+
+#creating bins for srb amts
+labels = ['{0} - {1}'.format(i,i+7500) for i in range(1000,81000,5000)]
+wgrade_srb['range'] = pd.cut(wgrade_srb.srb_amt, range(1000,81005,5000), right=True, labels=labels)
+
+print(wgrade_srb)
+
+#Comparison of grade
+wgrade_cnt = pd.DataFrame(wgrade_srb['grade'].value_counts())
+#grade_cnt
+wgrade_cnt.plot.bar(rot=0);
+
+#bar chart of srb_amt across the grades
+wgrade_srb
+wgrade_srb.groupby(['range','term_length']).count().unstack().plot(kind='bar', title ='With Incentives Pay Grades 4-6', ylabel='Count', xlabel='Bonus Amount Range',y='srb_amt', stacked=True)
+wgrade_srb.groupby(['range','term_length']).count().unstack().plot(kind='bar', title ='With Incentives Pay Grades 4-6', ylabel='Count', xlabel='Bonus Amount Range',y='srb_amt', stacked=False)
+
+#writing the numbers  out to CSV
+#xwgrade_srbs = pmos_counts.head(10)
+wgrade_srb.to_csv('counts.csv')
+
+#Mergeing the the smae soldiers from reenlistments and extensions
+dups = pd.merge(df,dfe,on=['dob','basd'])
+
+#viewing the col names
+print(dups.columns.values.tolist())
+
+dups_count = dups[['option_number','sex_x','term_length_x','age_x','ext_reason','term_length_y']]
+
+dups_count.groupby(['ext_reason','option_number']).count().unstack().plot(kind='bar',title='Grade 4', ylabel='Count', xlabel='Bonus Amount Range',stacked=False)
+
+
+#scatter plot of reenlistments and extensions that did both
+op_cnt = pd.DataFrame(dups_count['ext_reason'].value_counts())
+dups_count.plot.scatter(x='ext_reason', y='option_number',s='option_number', ylim=(0,5.5))
+print(op_cnt)
+
+#extn dups visual
+ext_cnt = pd.DataFrame(dups_count['ext_reason'].value_counts())
+#grade_cnt
+ext_cnt.plot.bar(rot=0, title='Extension Counts');
+
+#reups dups visual
+opt_cnt = pd.DataFrame(dups_count['option_number'].value_counts())
+#grade_cnt
+opt_cnt.plot.bar(rot=0,title='Option Counts');
+
+
+#Keeping only the extension reason codes W and A1
+grade_ext = grade_ext.loc[(grade_ext['ext_reason'] == 'A1') | (grade_ext['ext_reason'] == 'W')]
+
+print(grade_ext)
+print(grade_ext.nunique())
+
+#Comparison of grade extending
+grade_cnt2 = pd.DataFrame(grade_ext['grade'].value_counts())
+#grade_cnt
+grade_cnt2.plot.bar(rot=0);
+
+
+#Creating the data frame for extension reason and grades
+age_ext = dfe[['grade','ext_reason','age']]
+
+#age_ext.groupby(['age']).count().plot(kind='bar',title='Age Comparison', ylabel='Count', xlabel='Ages')
+
+#comparing ages and different grades
+age_ext.groupby(['age','grade']).count().unstack().plot(kind='bar', title ='Extensions by Pay Grade', ylabel='Count', xlabel='Ages',y='ext_reason', stacked=True)
